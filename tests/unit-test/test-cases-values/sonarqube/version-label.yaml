@@ -1,0 +1,3 @@
+# image.tag is provided by the test via --set; edition just satisfies the
+# chart's "edition or community" requirement, the version label logic is the same.
+edition: developer

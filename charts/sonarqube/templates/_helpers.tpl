@@ -46,7 +46,21 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: sonarqube
 app.kubernetes.io/component: {{ include "sonarqube.fullname" . }}
-app.kubernetes.io/version: {{ (tpl (include "image.tag" .) . ) | trunc 63 | trimSuffix "-" | quote }}
+app.kubernetes.io/version: {{ include "sonarqube.versionLabel" (tpl (include "image.tag" .) .) | quote }}
+{{- end -}}
+
+{{/*
+Make image.tag usable as the app.kubernetes.io/version label: strip the pinned
+digest (tag@sha256:...) and any other invalid char, then cap at 63.
+*/}}
+{{- define "sonarqube.versionLabel" -}}
+{{- $tag := . | toString -}}
+{{- $tag = regexReplaceAll "@.*$" $tag "" -}}
+{{- $tag = regexReplaceAll "[^A-Za-z0-9_.-]" $tag "_" -}}
+{{- $tag = $tag | trunc 63 -}}
+{{- $tag = regexReplaceAll "^[^A-Za-z0-9]+" $tag "" -}}
+{{- $tag = regexReplaceAll "[^A-Za-z0-9]+$" $tag "" -}}
+{{- $tag -}}
 {{- end -}}
 
 {{/*
